@@ -55,8 +55,8 @@ class Application extends Config {
      * Здесь нужно реализовать механизм валидации данных формы
      * @param $data array
      * $data - массив пар ключ-значение, генерируемое JavaScript функцией serializeArray()
-     * name - Имя, обязательное поле, не должно содержать цифр и не быть больше 64 символов
-     * phone - Телефон, обязательное поле, должно быть в правильном международном формате. Например +38 (067) 123-45-67
+     * name - Имя, обязательное поле, не должно содержать цифр и не быть больше 64 символов //
+     * phone - Телефон, обязательное поле, должно быть в правильном международном формате. Например +38 (067) 123-45-67 //
      * email - E-mail, необязательное поле, но должно быть либо пустым либо содержать валидный адрес e-mail
      * comment - необязательное поле, но не должно содержать тэгов и быть больше 1024 символов
      *
@@ -76,18 +76,28 @@ class Application extends Config {
             $key = $data[$i]['name'];
             $value = $data[$i]['value'];
 
+            if ($data[0]['name'] !== 'name') {
+                $errors['name'] = 'Поле "Name" обязятельное';
+            }
+
+            if ($data[1]['name'] !== 'phone') {
+                $errors['phone'] = 'Поле "Phone" обязятельное';
+            }
+
             switch ($key) {
                 case 'name':
                     if (empty($value)) {
                         $errors[$key] = $NOT_EMPTY_STRING;
-                    } else if (strlen($value) >= 64 || preg_match('/\d/', $value)) {
-                        $errors[$key] = 'Поле не должно содержать цифр и не быть более 64 символов';
+                    } else if (strlen($value) >= 64 ) {
+                        $errors[$key] = 'Поле слишком долгое';
+                    } else if (preg_match('/\d/', $value)) {
+                        $errors[$key] = 'Поле не должно содержать цифр';
                     }
                     break;
                 case 'phone':
                     if (empty($value)) {
                         $errors[$key] = $NOT_EMPTY_STRING;
-                    } else if (strpos($value, '+380') !== 0 && strlen($value) !== 13) {
+                    } else if (strpos($value, '_')) {
                         $errors[$key] = 'Некорректный номер';
                     }
                     break;
@@ -97,8 +107,10 @@ class Application extends Config {
                     }
                     break;
                 case 'comment':
-                    if ((!empty($value) && strlen($value) < 1024) || (strlen($value) < 1024 && strip_tags($value) !== $value)) {
-                        $errors[$key] = 'Поле не должно содержать теги и быть более 1024 символов';
+                    if (!empty($value) && strlen($value) < 1024) {
+                        $errors[$key] = 'Поле должно быть более 1024 символов';
+                    } else if (strip_tags($value) !== $value) {
+                        $errors[$key] = 'Поле не должно содержать теги';
                     }
                     break;
             }
